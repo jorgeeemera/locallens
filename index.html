@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LocalLens — busca en tus documentos sin que salgan de tu Mac</title>
-<meta name="description" content="LocalLens busca en tus PDF y notas por palabras y por significado, sin conexión. Beta gratuita para Mac con Apple silicon.">
+<meta name="description" content="LocalLens busca en tus PDF, Word y notas por palabras y por significado, sin conexión. Beta gratuita para Mac con Apple silicon.">
 <link rel="icon" href="img/favicon.png">
 <style>
 /* Tokens copied from Sources/LocalLens/LensTheme.swift (LensColors.make) */
@@ -161,7 +161,7 @@ footer { padding: 32px 0 48px; color: var(--text3); font-size: 14px; border-top:
     <div>
       <span class="pill"><span class="dot" aria-hidden="true"></span>Beta gratuita · Mac con Apple silicon</span>
       <h1>Encuentra lo que dice un documento, no solo cómo se llama.</h1>
-      <p class="lead">LocalLens busca dentro de tus PDF y notas por las palabras exactas y por lo que significan. Todo ocurre en tu Mac: la app no tiene acceso a internet.</p>
+      <p class="lead">LocalLens busca dentro de tus PDF, documentos de Word y notas por las palabras exactas y por lo que significan. Todo ocurre en tu Mac: la app no tiene acceso a internet.</p>
       <div class="actions">
         <a class="btn primary" href="#instalar">Instalar con Homebrew</a>
         <a class="btn secondary" href="https://github.com/jorgeeemera/locallens/releases/latest">Descargar de GitHub</a>
@@ -206,7 +206,7 @@ footer { padding: 32px 0 48px; color: var(--text3); font-size: 14px; border-top:
     <div class="three">
       <div>
         <h3><span class="glyph words" aria-hidden="true">Aa</span>Por palabras</h3>
-        <p>Resalta cada coincidencia y te lleva a la página exacta del PDF.</p>
+        <p>Resalta cada coincidencia y te lleva a la página exacta del PDF, también en documentos escaneados.</p>
       </div>
       <div>
         <h3><span class="glyph meaning" aria-hidden="true">≈</span>Por significado</h3>
@@ -236,7 +236,7 @@ footer { padding: 32px 0 48px; color: var(--text3); font-size: 14px; border-top:
       <li>
         <h3>Instala la app con Homebrew</h3>
         <div class="cmd"><code>brew install --cask jorgeeemera/tap/locallens</code><button type="button" data-copy="brew install --cask jorgeeemera/tap/locallens">Copiar</button></div>
-        <p>¿Sin Homebrew? Descarga <code>LocalLens-0.1.0-arm64.zip</code> desde <a href="https://github.com/jorgeeemera/locallens/releases/latest">GitHub Releases</a> y arrastra la app a Aplicaciones.</p>
+        <p>¿Sin Homebrew? Descarga <code>LocalLens-0.2.0-arm64.zip</code> desde <a href="https://github.com/jorgeeemera/locallens/releases/latest">GitHub Releases</a> y arrastra la app a Aplicaciones.</p>
       </li>
       <li>
         <h3>Autoriza la app la primera vez</h3>
@@ -244,8 +244,8 @@ footer { padding: 32px 0 48px; color: var(--text3); font-size: 14px; border-top:
         <div class="notice"><strong>Por qué pasa:</strong> esta beta no está notarizada por Apple. Gatekeeper y el aislamiento (App Sandbox) siguen activos; solo autorizas esta app. No desactives Gatekeeper.</div>
       </li>
       <li>
-        <h3>Activa la búsqueda por significado</h3>
-        <p>Descarga <code>LocalLens-model-multilingual-e5-small.zip</code> (unos 220 MB) de la misma release, descomprímelo y elige la carpeta en <strong>Ajustes › Importar paquete de modelo…</strong> Sin el modelo, la búsqueda por palabras funciona igual.</p>
+        <h3>Añade tus carpetas</h3>
+        <p>Pulsa <strong>+</strong> y elige las carpetas donde buscar. La búsqueda por significado viene incluida: el modelo se prepara solo en unos segundos la primera vez, sin descargar nada.</p>
       </li>
     </ol>
   </section>
@@ -253,12 +253,13 @@ footer { padding: 32px 0 48px; color: var(--text3); font-size: 14px; border-top:
   <section id="beta">
     <h2>Qué esperar de la beta</h2>
     <dl class="facts">
-      <dt>Versión</dt><dd>0.1.0, gratuita</dd>
+      <dt>Versión</dt><dd>0.2.0, gratuita</dd>
+      <dt>Descarga</dt><dd>Unos 220 MB, casi todo el modelo</dd>
       <dt>Requisitos</dt><dd>Apple silicon (M1 o posterior), macOS 14 o posterior. Probada a fondo en la versión actual de macOS; en 14 y 15 aún no.</dd>
-      <dt>Formatos</dt><dd>PDF, texto (.txt) y Markdown. Word aún no.</dd>
+      <dt>Formatos</dt><dd>PDF (también escaneados, con reconocimiento de texto en tu Mac), Word (.docx y .doc), RTF, OpenDocument (.odt), texto (.txt) y Markdown</dd>
       <dt>Idiomas</dt><dd>Interfaz en español e inglés; la búsqueda por significado entiende ambos</dd>
       <dt>Firma</dt><dd>Ad hoc, sin notarizar (de ahí el paso 2)</dd>
-      <dt>Modelo</dt><dd>multilingual-e5-small de intfloat, licencia MIT, incluida en el paquete</dd>
+      <dt>Modelo</dt><dd>multilingual-e5-small de intfloat, incluido en la app, licencia MIT (texto dentro de la app)</dd>
       <dt>Desinstalar</dt><dd><code>brew uninstall --cask locallens</code>. Tu índice no se borra; puedes borrarlo antes desde Ajustes.</dd>
     </dl>
   </section>

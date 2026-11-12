@@ -1,6 +1,6 @@
 # LocalLens (beta)
 
-Búsqueda privada en tus documentos para Mac: por palabras exactas y por significado, sin conexión. La app no tiene permiso de red y solo lee las carpetas que eliges.
+Búsqueda privada en tus documentos (PDF, Word, notas) para Mac: por palabras exactas y por significado, sin conexión. La app no tiene permiso de red y solo lee las carpetas que eliges.
 
 Web: https://jorgeeemera.github.io/locallens/
 
@@ -12,7 +12,7 @@ Requisitos: Mac con Apple silicon y macOS 14 o posterior.
 brew install --cask jorgeeemera/tap/locallens
 ```
 
-O descarga `LocalLens-0.1.0-arm64.zip` de [Releases](https://github.com/jorgeeemera/locallens/releases/latest) y arrastra la app a Aplicaciones.
+O descarga `LocalLens-0.2.0-arm64.zip` de [Releases](https://github.com/jorgeeemera/locallens/releases/latest) y arrastra la app a Aplicaciones.
 
 ### ⚠️ macOS pedirá autorización la primera vez
 
@@ -25,9 +25,9 @@ Solo hace falta una vez. Gatekeeper y el App Sandbox siguen activos: no desactiv
 
 ### Búsqueda por significado
 
-El modelo va aparte: descarga `LocalLens-model-multilingual-e5-small.zip` de la misma release, descomprímelo y en LocalLens elige **Ajustes › Importar paquete de modelo…**. Sin el modelo, la búsqueda por palabras funciona igual. La app nunca descarga nada por sí misma.
+Viene incluida: el modelo se prepara solo la primera vez que abres la app, sin descargar nada. La app nunca usa la red.
 
-Comprueba las descargas con `SHA256SUMS.txt` de la release:
+Comprueba la descarga con `SHA256SUMS.txt` de la release:
 
 ```sh
 shasum -a 256 -c SHA256SUMS.txt
@@ -35,11 +35,11 @@ shasum -a 256 -c SHA256SUMS.txt
 
 ## Qué esperar
 
-- Formatos: PDF, .txt y Markdown.
+- Formatos: PDF (también escaneados, con OCR local), Word (.docx, .doc), RTF, .odt, .txt y Markdown.
 - Interfaz en español e inglés.
 - macOS 14 y 15 aún no probados a fondo; no hay versión para Intel.
 - Desinstalar: `brew uninstall --cask locallens`. El índice no se borra; puedes borrarlo antes desde Ajustes.
 
 ## Licencias de terceros
 
-Modelo [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small) (rev. `614241f6`), licencia MIT; el texto de la licencia va dentro del paquete del modelo (`LICENSE.txt`).
+Modelo [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small) (rev. `614241f6`), licencia MIT; incluido en la app; el texto de la licencia está en `LocalLens.app/Contents/Resources/multilingual-e5-small.locallens-model/LICENSE.txt`.
