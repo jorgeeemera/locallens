@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LocalLens — busca en tus documentos sin que salgan de tu Mac</title>
+<meta name="description" content="LocalLens busca en tus PDF y notas por palabras y por significado, sin conexión. Beta gratuita para Mac con Apple silicon.">
+<link rel="icon" href="img/favicon.png">
+<style>
+/* Tokens copied from Sources/LocalLens/LensTheme.swift (LensColors.make) */
+:root {
+  --window: #F4F4F6; --content: #FFFFFF; --rail: #EEEEF2;
+  --text: #1D1D1F; --text2: #5C5C62; --text3: #6E6E73; --separator: #E1E1E7;
+  --accent: #0060DF; --on-accent: #FFFFFF; --accent-soft: #E3EEFF; --accent-text: #0050BA;
+  --selection: #EAF1FD; --highlight: rgba(255, 204, 0, .38);
+  --meaning-border: #8E8E96; --meaning-soft: rgba(120, 120, 135, .08);
+  --warning: #B25E00; --warning-border: #D7A85C; --capsule-border: #D6D6DC;
+  --row-radius: 10px; --capsule-h: 38px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --window: #1B1B1D; --content: #1F1F22; --rail: #19191B;
+    --text: #F5F5F7; --text2: #BEBEC5; --text3: #9B9BA3; --separator: #35353B;
+    --accent: #4A97FF; --on-accent: #08162B; --accent-soft: rgba(74, 151, 255, .18); --accent-text: #9CC6FF;
+    --selection: rgba(74, 151, 255, .20); --highlight: rgba(255, 204, 0, .32);
+    --meaning-border: #8A8A93; --meaning-soft: rgba(160, 160, 175, .10);
+    --warning: #FFB340; --warning-border: #8F6A2C; --capsule-border: #4A4A50;
+  }
+}
+@media (prefers-contrast: more) {
+  :root { --text2: var(--text); --separator: #6E6E73; --meaning-border: #3A3A3F; --capsule-border: #3A3A3F; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--window); color: var(--text);
+  font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+}
+a { color: var(--accent-text); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+/* Toolbar: same chrome as the app window */
+.bar { position: sticky; top: 0; z-index: 2; background: color-mix(in srgb, var(--window) 82%, transparent);
+  backdrop-filter: saturate(1.6) blur(18px); -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  border-bottom: 1px solid var(--separator); }
+.bar .wrap { display: flex; align-items: center; gap: 12px; height: 56px; }
+.bar img { width: 28px; height: 28px; }
+.bar strong { font-size: 15px; }
+.bar nav { margin-left: auto; display: flex; gap: 4px; }
+.bar nav a { color: var(--text2); text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 8px; }
+.bar nav a:hover { background: var(--accent-soft); color: var(--accent-text); }
+@media (max-width: 560px) { .bar nav a:not(.cta) { display: none; } }
+.pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2);
+  border: 1px solid var(--capsule-border); border-radius: 999px; padding: 3px 12px; background: var(--content); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+/* Hero */
+.hero { padding: 72px 0 40px; display: grid; grid-template-columns: 1fr; gap: 40px; }
+.hero h1 { font-size: clamp(36px, 6vw, 60px); line-height: 1.05; letter-spacing: -0.025em; margin: 18px 0 16px; max-width: 14ch; }
+.hero p.lead { font-size: 20px; color: var(--text2); max-width: 36em; margin: 0 0 28px; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 10px;
+  font: 600 15px/1 inherit; font-family: inherit; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn.secondary { background: var(--content); color: var(--text); border-color: var(--capsule-border); }
+.cmd { display: flex; align-items: center; gap: 8px; background: var(--content); border: 1px solid var(--capsule-border);
+  border-radius: 10px; padding: 4px 4px 4px 14px; font: 14px/1.4 ui-monospace, "SF Mono", Menlo, monospace; max-width: 100%; }
+.cmd code { overflow-x: auto; white-space: nowrap; }
+.cmd button { flex: none; height: 30px; padding: 0 12px; border-radius: 7px; border: 0; background: var(--accent-soft);
+  color: var(--accent-text); font: 600 13px/1 -apple-system, sans-serif; cursor: pointer; }
+
+/* Live demo: the app's own vocabulary — capsule, mode switch, Aa / ≈ groups */
+.demo { background: var(--content); border: 1px solid var(--separator); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 1px 0 var(--separator), 0 24px 60px -30px rgba(0, 40, 100, .35); }
+.demo-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px; background: var(--window);
+  border-bottom: 1px solid var(--separator); }
+.capsule { flex: 1 1 280px; display: flex; align-items: center; gap: 8px; height: var(--capsule-h); padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--capsule-border); background: var(--content); }
+.capsule svg { flex: none; color: var(--text3); }
+.capsule input { flex: 1; min-width: 0; border: 0; background: none; color: var(--text); font: inherit; font-size: 15px; outline: none; }
+.modes { display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid var(--capsule-border); background: var(--content); }
+.modes button { border: 0; background: none; color: var(--text2); font: 14px/1 inherit; font-family: inherit;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer; }
+.modes button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-text); font-weight: 600; }
+.results { padding: 8px 12px 16px; min-height: 290px; }
+.group { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; padding: 12px 4px 8px; }
+.group .n { color: var(--text3); font-weight: 400; }
+.glyph { display: inline-grid; place-items: center; width: 22px; height: 20px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+.glyph.words { background: var(--accent-soft); color: var(--accent-text); }
+.glyph.meaning { border: 1.5px dashed var(--meaning-border); color: var(--text2); font-size: 13px; }
+.row { border-radius: var(--row-radius); padding: 10px 14px; margin-bottom: 6px; }
+.row.sel { background: var(--selection); }
+.row.meaning { border: 1.5px dashed var(--meaning-border); background: var(--meaning-soft); }
+.row .t { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; font-size: 15px; }
+.row .t span { color: var(--text3); font-weight: 400; font-size: 13px; flex: none; }
+.row .f { color: var(--text3); font-size: 13px; }
+.row p { margin: 4px 0 0; color: var(--text2); font-size: 14px; line-height: 1.45; }
+mark { background: var(--highlight); color: inherit; border-radius: 3px; padding: 0 1px; font-weight: 600; }
+.empty-hint { color: var(--text3); font-size: 14px; padding: 8px 4px; }
+[hidden] { display: none !important; }
+
+/* Sections */
+section { padding: 56px 0; border-top: 1px solid var(--separator); }
+h2 { font-size: clamp(26px, 3.6vw, 34px); letter-spacing: -0.015em; line-height: 1.15; margin: 0 0 12px; }
+.sub { color: var(--text2); max-width: 40em; margin: 0 0 32px; }
+.three { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.three h3 { display: flex; align-items: center; gap: 10px; font-size: 18px; margin: 0 0 6px; }
+.three p { margin: 0; color: var(--text2); font-size: 16px; }
+
+.shot { margin: 0; }
+.shot img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--separator); }
+.shot figcaption { color: var(--text3); font-size: 14px; margin-top: 10px; }
+
+ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 14px; max-width: 760px; }
+ol.steps > li { counter-increment: s; position: relative; padding: 18px 20px 18px 64px; background: var(--content);
+  border: 1px solid var(--separator); border-radius: 12px; }
+ol.steps > li::before { content: counter(s); position: absolute; left: 20px; top: 18px; width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 14px; display: grid; place-items: center; }
+ol.steps h3 { margin: 0 0 4px; font-size: 17px; }
+ol.steps p { margin: 4px 0 0; color: var(--text2); font-size: 16px; }
+ol.steps .cmd { margin-top: 10px; }
+
+.notice { border: 1px solid var(--warning-border); border-left-width: 4px; border-radius: 10px; padding: 14px 16px;
+  background: var(--content); margin-top: 12px; }
+.notice strong { color: var(--warning); }
+
+dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 10px 24px; margin: 0; max-width: 760px; }
+dl.facts dt { color: var(--text3); }
+dl.facts dd { margin: 0; }
+@media (max-width: 560px) { dl.facts { grid-template-columns: 1fr; } dl.facts dd { margin-bottom: 8px; } }
+
+footer { padding: 32px 0 48px; color: var(--text3); font-size: 14px; border-top: 1px solid var(--separator); }
+
+@media (min-width: 900px) {
+  .hero { grid-template-columns: 1fr 1.05fr; align-items: center; padding-top: 88px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .row { transition: opacity .18s ease-out, transform .18s ease-out; }
+  .row.enter { opacity: 0; transform: translateY(4px); }
+}
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <img src="img/icon.png" alt="" width="28" height="28">
+    <strong>LocalLens</strong>
+    <nav aria-label="Secciones">
+      <a href="#como">Cómo funciona</a>
+      <a href="#instalar" class="cta">Instalar</a>
+      <a href="#beta">Beta</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div>
+      <span class="pill"><span class="dot" aria-hidden="true"></span>Beta gratuita · Mac con Apple silicon</span>
+      <h1>Encuentra lo que dice un documento, no solo cómo se llama.</h1>
+      <p class="lead">LocalLens busca dentro de tus PDF y notas por las palabras exactas y por lo que significan. Todo ocurre en tu Mac: la app no tiene acceso a internet.</p>
+      <div class="actions">
+        <a class="btn primary" href="#instalar">Instalar con Homebrew</a>
+        <a class="btn secondary" href="https://github.com/jorgeeemera/locallens/releases/latest">Descargar de GitHub</a>
+      </div>
+    </div>
+
+    <div class="demo" aria-label="Ejemplo de búsqueda">
+      <div class="demo-top">
+        <label class="capsule">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span class="visually-hidden" hidden>Consulta</span>
+          <input id="q" value="fianza de dos meses" aria-label="Consulta de ejemplo" readonly>
+        </label>
+        <div class="modes" role="group" aria-label="Modo de búsqueda">
+          <button type="button" data-mode="both" aria-pressed="true">Palabras y significado</button>
+          <button type="button" data-mode="words" aria-pressed="false">Solo palabras</button>
+        </div>
+      </div>
+      <div class="results" aria-live="polite">
+        <div class="group"><span class="glyph words" aria-hidden="true">Aa</span>Contienen tus palabras <span class="n">1</span></div>
+        <div class="row sel">
+          <div class="t">es-contrato-alquiler.pdf <span>Página 2</span></div>
+          <div class="f">Facturas</div>
+          <p>…El arrendatario entrega en este acto una <mark>fianza</mark> <mark>de</mark> <mark>dos</mark> <mark>meses</mark> de renta, que será devuelta al finalizar el contrato…</p>
+        </div>
+        <div id="meaning">
+          <div class="group"><span class="glyph meaning" aria-hidden="true">≈</span>Relacionados por significado <span class="n">1</span></div>
+          <div class="row meaning">
+            <div class="t">en-lease-agreement.pdf <span>Página 1</span></div>
+            <div class="f">Contratos del alquiler</div>
+            <p>A security deposit equal to one month of rent is paid before moving in and is protected in a government scheme.</p>
+          </div>
+        </div>
+        <p class="empty-hint" id="hint" hidden>Con «Solo palabras» no aparece el contrato en inglés: no contiene ninguna de tus palabras.</p>
+      </div>
+    </div>
+  </div>
+
+  <section id="como">
+    <h2>Dos formas de encontrar, una sola búsqueda</h2>
+    <p class="sub">Escribe como lo dirías. LocalLens separa lo que contiene tus palabras de lo que habla de lo mismo con otras, para que sepas siempre por qué aparece cada resultado.</p>
+    <div class="three">
+      <div>
+        <h3><span class="glyph words" aria-hidden="true">Aa</span>Por palabras</h3>
+        <p>Resalta cada coincidencia y te lleva a la página exacta del PDF.</p>
+      </div>
+      <div>
+        <h3><span class="glyph meaning" aria-hidden="true">≈</span>Por significado</h3>
+        <p>Encuentra el pasaje aunque no uses sus palabras, también si preguntas en español por un documento en inglés.</p>
+      </div>
+      <div>
+        <h3><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9V6.5a3 3 0 016 0V9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Sin conexión</h3>
+        <p>La app no tiene permiso de red y solo lee las carpetas que tú eliges. El índice se queda en tu Mac.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Captura de la app">
+    <figure class="shot">
+      <picture>
+        <source srcset="img/app-dark.jpg" media="(prefers-color-scheme: dark)">
+        <img src="img/app-light.jpg" alt="Ventana de LocalLens: a la izquierda las carpetas, en el centro un resultado relacionado por significado y a la derecha la página del PDF." width="1600" height="1000" loading="lazy">
+      </picture>
+      <figcaption>Una pregunta en inglés encuentra el contrato aunque no comparta ninguna palabra con él. Documentos de ejemplo.</figcaption>
+    </figure>
+  </section>
+
+  <section id="instalar">
+    <h2>Instalar</h2>
+    <p class="sub">Necesitas un Mac con Apple silicon y macOS 14 o posterior.</p>
+    <ol class="steps">
+      <li>
+        <h3>Instala la app con Homebrew</h3>
+        <div class="cmd"><code>brew install --cask jorgeeemera/tap/locallens</code><button type="button" data-copy="brew install --cask jorgeeemera/tap/locallens">Copiar</button></div>
+        <p>¿Sin Homebrew? Descarga <code>LocalLens-0.1.0-arm64.zip</code> desde <a href="https://github.com/jorgeeemera/locallens/releases/latest">GitHub Releases</a> y arrastra la app a Aplicaciones.</p>
+      </li>
+      <li>
+        <h3>Autoriza la app la primera vez</h3>
+        <p>Al abrirla, macOS avisará de que no puede verificar la app y no la abrirá. Ve a <strong>Ajustes del Sistema › Privacidad y seguridad</strong>, baja hasta el aviso de LocalLens y pulsa <strong>Abrir igualmente</strong>. Solo hace falta una vez.</p>
+        <div class="notice"><strong>Por qué pasa:</strong> esta beta no está notarizada por Apple. Gatekeeper y el aislamiento (App Sandbox) siguen activos; solo autorizas esta app. No desactives Gatekeeper.</div>
+      </li>
+      <li>
+        <h3>Activa la búsqueda por significado</h3>
+        <p>Descarga <code>LocalLens-model-multilingual-e5-small.zip</code> (unos 230 MB) de la misma release, descomprímelo y elige la carpeta en <strong>Ajustes › Importar paquete de modelo…</strong> Sin el modelo, la búsqueda por palabras funciona igual.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section id="beta">
+    <h2>Qué esperar de la beta</h2>
+    <dl class="facts">
+      <dt>Versión</dt><dd>0.1.0, gratuita</dd>
+      <dt>Requisitos</dt><dd>Apple silicon (M1 o posterior), macOS 14 o posterior. Probada a fondo en la versión actual de macOS; en 14 y 15 aún no.</dd>
+      <dt>Formatos</dt><dd>PDF, texto (.txt) y Markdown. Word aún no.</dd>
+      <dt>Idiomas</dt><dd>Interfaz en español e inglés; la búsqueda por significado entiende ambos</dd>
+      <dt>Firma</dt><dd>Ad hoc, sin notarizar (de ahí el paso 2)</dd>
+      <dt>Modelo</dt><dd>multilingual-e5-small de intfloat, licencia MIT, incluida en el paquete</dd>
+      <dt>Desinstalar</dt><dd><code>brew uninstall --cask locallens</code>. Tu índice no se borra; puedes borrarlo antes desde Ajustes.</dd>
+    </dl>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">LocalLens · beta. Hecho para Mac. Sin cuentas, sin analítica, sin red.</div>
+</footer>
+
+<script>
+  const meaning = document.getElementById('meaning');
+  const hint = document.getElementById('hint');
+  document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.modes button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    const words = b.dataset.mode === 'words';
+    meaning.hidden = words; hint.hidden = !words;
+    const row = (words ? hint : meaning.querySelector('.row'));
+    row.classList.add('enter'); requestAnimationFrame(() => requestAnimationFrame(() => row.classList.remove('enter')));
+  }));
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copiado'; }
+    catch { b.textContent = 'Selecciona y copia'; }
+    setTimeout(() => (b.textContent = 'Copiar'), 1600);
+  }));
+</script>
+</body>
+</html>
