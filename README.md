@@ -12,6 +12,8 @@ Requisitos: Mac con Apple silicon y macOS 14 o posterior.
 brew install --cask jorgeeemera/tap/locallens
 ```
 
+Usa siempre el nombre completo `jorgeeemera/tap/locallens` (también para `brew upgrade --cask` y `brew uninstall --cask`): con el nombre corto, Homebrew rechaza los taps de terceros que aún no son de confianza.
+
 O descarga `LocalLens-0.2.1-arm64.zip` de [Releases](https://github.com/jorgeeemera/locallens/releases/latest) y arrastra la app a Aplicaciones.
 
 ### ⚠️ macOS pedirá autorización la primera vez
@@ -38,7 +40,7 @@ shasum -a 256 -c SHA256SUMS.txt
 - Formatos: PDF (también escaneados, con OCR local), Word (.docx, .doc), RTF, .odt, .txt y Markdown.
 - Interfaz en español e inglés.
 - macOS 14 y 15 aún no probados a fondo; no hay versión para Intel.
-- Desinstalar: `brew uninstall --cask locallens`. El índice no se borra; puedes borrarlo antes desde Ajustes.
+- Desinstalar: `brew uninstall --cask jorgeeemera/tap/locallens`. El índice no se borra; puedes borrarlo antes desde Ajustes.
 
 ## Licencias de terceros
 
