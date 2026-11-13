@@ -12,7 +12,7 @@ Requisitos: Mac con Apple silicon y macOS 14 o posterior.
 brew install --cask jorgeeemera/tap/locallens
 ```
 
-O descarga `LocalLens-0.2.0-arm64.zip` de [Releases](https://github.com/jorgeeemera/locallens/releases/latest) y arrastra la app a Aplicaciones.
+O descarga `LocalLens-0.2.1-arm64.zip` de [Releases](https://github.com/jorgeeemera/locallens/releases/latest) y arrastra la app a Aplicaciones.
 
 ### ⚠️ macOS pedirá autorización la primera vez
 
